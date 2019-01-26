@@ -10,7 +10,7 @@
 Description = deswappify_auto: automatically unswap large swap files when idle
 
 [Service]
-ExecStart = /usr/local/bin/deswappify_auto.py -v info -l
+ExecStart = /usr/local/bin/deswappify_auto.py -v info -l -e
 
 [Install]
 WantedBy = multi-user.target
