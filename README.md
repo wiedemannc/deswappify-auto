@@ -49,4 +49,6 @@ Options:
                         detection. [default: 4]
   -n, --avoid_renicing  avoid renicing this process.
   -l, --systemd_logger  use systemd logger instead of python stream logger.
+  -e, --swapoffon       if given, a swapoff -a followed by a swapon -a will be
+                        issued after successfully completing a deswapping.
 ```
