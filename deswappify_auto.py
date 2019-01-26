@@ -45,6 +45,7 @@ class Deswappifier(object):
         self.idle_after_system_busy = kw.get("idle_after_busy", 5)
         self.idle_after_completed = kw.get("idle_after_completed", 300)
         self.proc_threshold = kw.get("max_active_processes", 4)
+        self.perform_swap_off = kw.get("swapoffon", False)
         verbose = kw.get("verbose", "error")
         systemdlog = kw.get("systemd_logger")
 
@@ -258,6 +259,21 @@ class Deswappifier(object):
         if len(self.remaining_items) == 0:
             self.select_new_process()
         if len(self.remaining_items) == 0:
+            if self.state != self.STATE_DONE:
+                # perform a new scan and check if we are still done
+                self.lastProcScan = {}
+                self.select_new_process()
+                if len(self.remaining_items) > 0:
+                    # there is more work to do...
+                    return
+            if self.perform_swap_off:
+                try:
+                    self.loginfo("executing 'swapoff -a'")
+                    subprocess.check_call(["swapoff", "-a"])
+                    self.loginfo("executing 'swapon -a'")
+                    subprocess.check_call(["swapon", "-a"])
+                except Exception as e:
+                    self.logger.exception("executing swapoff / swapon failed.")
             self.setState(self.STATE_DONE)
             time.sleep(self.idle_after_completed)
             return
@@ -419,6 +435,9 @@ def main():
     parser.add_option("-l", "--systemd_logger",
                       action="store_true",
                       help="use systemd logger instead of python stream logger.")
+    parser.add_option("-e", "--swapoffon",
+                      action="store_true",
+                      help="if given, a swapoff -a followed by a swapon -a will be issued after successfully completing a deswapping.")
     option, args = parser.parse_args()
     ds = Deswappifier(**option.__dict__)
     while 1:
