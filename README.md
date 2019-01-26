@@ -1,14 +1,22 @@
 # deswappify-auto
 
-Automatically swap-in pages when enough memory is available.
+## Automatically fetch swapped pages to physical memory when enough memory is available.
 
 The code is inspired by https://gist.github.com/WGH-/91260f6d65db88be2c847053c49be5ae and the discussion on  https://unix.stackexchange.com/questions/45673/how-can-swapoff-be-that-slow.
 
 It is ment to be used as a daemon on linux. It continuously scans the memory and load situation and performs a deswap operation when there the situation allows (enough available memory and not too many active processes). This might be seen as a workaround for high swap usages after resume from hibernation, even if there is enough physical memory available.
 
+## Dependencies
+
 The script has been developed in python 3.5 (it might run also with python 2.7).
 
-Recommended python packages are systemd (for logging) and psutil (for setting an appropriate ionice level). If these packages are not installed, the functionality is slightly limited.
+Recommended python packages are `systemd` (for logging) and `psutil` (for setting an appropriate ionice level). If these packages are not installed, the functionality is slightly limited.
+
+The script expects the linux commands `free`, `swapoff` and `swapon` to be in PATH, the latter two are optional and only used if -e option is set.
+
+Obviously, the script has to be run with root privileges.
+
+## Help
 
 Help is available via deswappify_auto.py -h:
 
