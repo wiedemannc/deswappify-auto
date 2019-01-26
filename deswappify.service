@@ -1,0 +1,16 @@
+# sample service file for systemd assuming that the script is installed to /usr/local/bin and has execute permission
+# put this file to /etc/systemd/system
+# enable it with 
+#   systemctl enable deswappify
+# (it will be started automaticall at boot time then)
+# manually start it with
+#   systemctl start deswappify
+
+[Unit]
+Description = deswappify_auto: automatically unswap large swap files when idle
+
+[Service]
+ExecStart = /usr/local/bin/deswappify_auto.py -v info -l
+
+[Install]
+WantedBy = multi-user.target
