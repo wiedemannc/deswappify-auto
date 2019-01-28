@@ -10,7 +10,10 @@
 Description = deswappify_auto: automatically unswap large swap files when idle
 
 [Service]
-ExecStart = /usr/local/bin/deswappify_auto.py -v info -l -e
+# for python2.7 remove -t 120 option (because subprocess doesn't support timeouts there)
+# -l: log to systemd, -e: automatically perform swapoff -a && swapon -a
+# -j 8: use 8 threads in parallel swap-in read operations
+ExecStart = /usr/local/bin/deswappify_auto.py -l -e -j 8 -t 120
 
 [Install]
 WantedBy = multi-user.target
