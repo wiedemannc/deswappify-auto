@@ -249,7 +249,7 @@ class Deswappifier(object):
                                 proc_names[pid] = M.group(1)
                         if state is None:
                             self.logwarning("Cannot determine process state (%s). Process probably already died.", d)
-                        n_active += state != "S"
+                        n_active += state != "S" and state != "I" # sleep or idle
                     except IOError:
                         pass
             tend = time.time()
