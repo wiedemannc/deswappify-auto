@@ -619,6 +619,7 @@ def main():
                         help="If pids are specified, the program is run in one-shot mode. Otherwise it's run as a daemon.")
     args = parser.parse_args()
     
+    os.environ["LC_ALL"] = "C"
     t0 = time.time()
     ds = Deswappifier(**args.__dict__)
     if len(args.pids) == 0:
