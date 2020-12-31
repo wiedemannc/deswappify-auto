@@ -203,7 +203,7 @@ class Deswappifier(object):
             
     def logerror(self, *args):
         self.logger.error(*args)
-    https://github.com/wiedemannc/deswappify-auto/issues/1
+    
     def logwarning(self, *args):
         self.logger.warning(*args)
         
