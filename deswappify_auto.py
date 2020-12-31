@@ -203,7 +203,7 @@ class Deswappifier(object):
             
     def logerror(self, *args):
         self.logger.error(*args)
-    
+    https://github.com/wiedemannc/deswappify-auto/issues/1
     def logwarning(self, *args):
         self.logger.warning(*args)
         
@@ -349,7 +349,7 @@ class Deswappifier(object):
                     return
                 except IOError as e:
                     # this might happen if the processes died before we get here or on permission errors
-                    del swap_size[largest_dir]
+                    del swap_size[largest_pid]
                     self.loginfo("process died in between (%s).", str(e))
         
     def deswappify_parent(self):
