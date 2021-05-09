@@ -531,7 +531,7 @@ class Deswappifier(object):
     def setState(self, state):
         if state != self.state:
             self.state = state
-            if state == 1:
+            if state == self.STATE_DESWAP:
                 self.pageCluster(self.pc_during_deswap)
             else:
                 self.pageCluster(self.pc_during_idle)
