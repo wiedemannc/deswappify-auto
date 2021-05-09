@@ -126,6 +126,8 @@ class Deswappifier(object):
         self.num_workers = kw.get("num_parallel")
         self.develop_mode = kw.get("develop")
         self.spawn_timeout = kw.get("spawn_timeout")
+        self.pc_during_deswap = kw.get("pc_during_deswap")
+        self.pc_during_idle = kw.get("pc_during_idle")
         verbose = kw.get("verbose")
         systemdlog = kw.get("systemd_logger")
 
@@ -165,6 +167,15 @@ class Deswappifier(object):
         if self.spawn_timeout > 0 and sys.version_info.major < 3:
             self.logerror("option spawn_timeout not available in python 2")
             sys.exit(1)
+
+        if self.pc_during_idle < 0 and self.pc_during_deswap >= 0:
+            self.pc_during_idle = self.pageCluster(-1)
+            if self.pc_during_idle >= 0:
+                sys.argv.extend(["--pc_during_idle", str(self.pc_during_idle)])
+
+        if self.pc_during_idle >= 0 and self.pc_during_deswap < 0:
+            self.logerror("pc_during_idle is set (>=0) but pc_during_deswap is not set (<0). This is not supported.")
+            sys.exit(1)
             
         # state
         self.state = self.STATE_DESWAP
@@ -190,13 +201,28 @@ class Deswappifier(object):
         self.scan_proc(self.SCAN_PROC_ACTIVE|self.SCAN_PROC_SWAP_DETAILS)
         self.executor = ThreadPoolExecutor(max_workers = self.num_workers)
         self.futures_pending = set()
-                
+
     @staticmethod
     def get_active_pids():
         dirs = glob.glob("/proc/[0-9]*")
         for d in dirs:
             yield int(d[d.rfind("/")+1:])
-        
+
+    def pageCluster(self, newvalue):
+        try:
+            with open("/proc/sys/vm/page-cluster", "r") as f:
+                v = int(f.read())
+            if newvalue < 0:
+                return v
+            if v != newvalue:
+                self.loginfo("Modifying page-cluster from %d to %d.", v, newvalue)
+                with open("/proc/sys/vm/page-cluster", "w") as f:
+                    f.write("%d" % newvalue)
+            return newvalue
+        except Exception as e:
+            self.logger.exception("exception during modifying /proc/sys/vm/page-cluster (ignored)")
+            return -1
+
     def log(self, verbosity, msg, *args):
         if verbosity <= self.verbose:
             print(self.LOG_PREFIX[verbosity], msg % args)
@@ -505,6 +531,10 @@ class Deswappifier(object):
     def setState(self, state):
         if state != self.state:
             self.state = state
+            if state == 1:
+                self.pageCluster(self.pc_during_deswap)
+            else:
+                self.pageCluster(self.pc_during_idle)
             self.loginfo("State transition to %s", ["WAIT_IDLE", "DESWAP", "DONE"][self.state])
     
     def step(self, who_am_i):
@@ -615,6 +645,14 @@ def main():
     parser.add_argument("-d", "--develop",
                       action="store_true",
                       help="use in development mode, after a possible bug is detected, the application exits.")
+    parser.add_argument("--pc_during_deswap",
+                        type=int,
+                        default=16,
+                        help="Optimize swap read-ahead in /proc/sys/vm/page-cluster during deswap operation. This is the value to be used during deswappifying. The actual number of bytes can be calculated by pagesize*2^value. For page sizes of 4 kB, the default value of 16 is 256 MB. Use negative sizes to not modify the value stored in /proc/sys/vm/page-cluster.")
+    parser.add_argument("--pc_during_idle",
+                        type=int,
+                        default=-1,
+                        help="Optimize swap read-ahead in /proc/sys/vm/page-cluster during deswap operation. This is the value to be used during idle operation. Use negative arguments to return to the original value stored in /proc/sys/vm/page-cluster.")
     parser.add_argument("pids", metavar="pids", type=int, nargs='*', default=[],
                         help="If pids are specified, the program is run in one-shot mode. Otherwise it's run as a daemon.")
     args = parser.parse_args()
