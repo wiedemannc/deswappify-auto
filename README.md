@@ -27,7 +27,8 @@ usage: deswappify_auto [-h] [--version] [-v {error,warning,info,dump}]
                        [-P POLL_PROC_ACTIVE_INTERVAL] [-b IDLE_AFTER_BUSY]
                        [-c IDLE_AFTER_COMPLETED] [-a MAX_ACTIVE_PROCESSES]
                        [-n] [-l] [-e] [-j NUM_PARALLEL] [-t SPAWN_TIMEOUT]
-                       [-d]
+                       [-d] [--pc_during_deswap PC_DURING_DESWAP]
+                       [--pc_during_idle PC_DURING_IDLE]
                        [pids [pids ...]]
 
 positional arguments:
@@ -80,4 +81,18 @@ optional arguments:
                         python3. (default: 0)
   -d, --develop         use in development mode, after a possible bug is
                         detected, the application exits. (default: False)
+  --pc_during_deswap PC_DURING_DESWAP
+                        Optimize swap read-ahead in /proc/sys/vm/page-cluster
+                        during deswap operation. This is the value to be used
+                        during deswappifying. The actual number of bytes can
+                        be calculated by pagesize*2^value. For page sizes of 4
+                        kB, the default value of 16 is 256 MB. Use negative
+                        sizes to not modify the value stored in
+                        /proc/sys/vm/page-cluster. (default: 16)
+  --pc_during_idle PC_DURING_IDLE
+                        Optimize swap read-ahead in /proc/sys/vm/page-cluster
+                        during deswap operation. This is the value to be used
+                        during idle operation. Use negative arguments to
+                        return to the original value stored in
+                        /proc/sys/vm/page-cluster. (default: -1)
 ```
